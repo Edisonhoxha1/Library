@@ -1,0 +1,48 @@
+
+ 
+/*login*/
+.image_login{
+      background-image: url("../images/img.jpg");
+      background-size: auto;
+    }
+
+/*registered.php*/
+
+ .image_registered{
+        background-image: url("../images/img.jpg");
+        background-size: auto;
+     }
+/*homepage_admin.php*/
+
+  	.image_homepage{
+  					background-image: url("../images/book3.jpg");
+  					background-color: #F8ECE0;
+  					background-size: auto;
+  					opacity: 0.5;
+  				   }
+  	.title{
+	  		margin: 35px;
+	  		font-size: 50px;
+	  		font-family: "Georgia", "Courier New", monospace;
+           }
+  	
+/*home_page.php faqja kryesore kur logohesh ose regjistrohesh.*/
+	/*body{
+  		 font-size: 35px;
+  		 text-align: center;
+  		 background-image: url("img.jpg"); /*foton e mori nga body siper*/
+  		/* background-size: auto;
+  	    }*/
+
+  	#btn1{
+  		 margin-left: 70px;
+  		 margin-top: 50px;
+  	     }
+  	#btn2{
+  		  margin-top: 30px;
+  	     }  	
+
+/*delete.php*/
+  	.container{
+			   text-align: center;
+		      }
