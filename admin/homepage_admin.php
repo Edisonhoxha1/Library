@@ -1,131 +1,223 @@
 <?php
+ob_start();
 
+include('../header.php');
+include('../functions.php');
 include('menu_admin.php');
 
-
-
-
-
 if(!isset($_SESSION['email'])){
-      header("location:homepage_admin.php");
-      die();
-   }
-	
-	
-	$query_role = "SELECT * FROM books WHERE user_id = $user_id ";
-	$books_by_user = mysqli_query($conn, $query_role) or die (mysqli_error($conn));
+    header("Location:../login.php");
+    die();
+}
+
+if(isset($_SESSION['id'])){
+	$user_id=$_SESSION['id'];
+}
+
+//pagination
+if(isset($_GET['page_no']) && $_GET['page_no']!=""){
+	$page_no = $_GET['page_no'];
+}
+else{
+	$page_no = 1;
+}
+
+$total_records_per_page = 5;
+
+$offset = ($page_no-1) * $total_records_per_page;
+$previous_page = $page_no - 1;
+$next_page = $page_no + 1;
+$adjacents = "2";
+
+$result_count = mysqli_query($conn,"SELECT COUNT(*) As total_records FROM books ");
+
+$total_records = mysqli_fetch_array($result_count);
+$total_records = $total_records['total_records'];
+$total_no_of_pages = ceil($total_records / $total_records_per_page);
+$second_last = $total_no_of_pages - 1;
 
 	
-
-	$query = "SELECT * From books ORDER BY id DESC ";
-	$result = mysqli_query($conn, $query) or die (mysqli_error($conn));
+$query = "SELECT b.id, b.title, b.author, b.published_date, b.quantity, b.discount, b.price, b.description, b.upload_img, u.firstname From books AS b JOIN users AS u WHERE b.user_id = u.id ORDER BY b.id DESC  LIMIT $offset, $total_records_per_page ";
+$result = mysqli_query($conn, $query) or die (mysqli_error($conn));
 	
-	
-
-
 ?>
 
+<!-- TODO -->
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+$("#deleteAcc").on("click", function() {
+  $(".checkbox input:checked").parent().remove();
+});
+</script> -->
 
-
-<!-- <html>
-<head> -->
-	
-	 <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
-  
-  	
-
-  	
- 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>  
-  <script>
-  	$(document).ready(function(){
-  		$("#checkAll").click(function(){
-  			if($(this).is(":checked")){
-  				$(".checkItem").prop('checked',true);
-  			}
-  			else{
-  				$(".checkItem").prop('checked',false);
-  			}
-  		});
-  	});
-  </script>   
- 
-
-</script>
-<!-- </head>
-<body> -->
+<div class="container col-md-12">
 	<div class="main">
- <?php 
-	// var_dump($_POST['id']);
- 				
-	// 	if(isset($_POST('submit'))){
-	// 		echo "test";
-	// 		if(isset($_POST('id'))){
-	// 			foreach($_POST['id'] as $id){
-	// 				$delete_query = "DELETE FROM books WHERE id='$id'" ;
-	// 				$result = mysqli_query($conn, $delete_query);	
-	// 			}
-
-	// 		}
-	// 	}
-
-
-	// $sql = "SELECT * FROM books";
-	// $result = mysqli_query($conn, $sql);
-	 ?> 
-	 <div class="title">
-		<h3><strong> All Books. </strong></h3>
-	</div>
-
-	
+		<div class="title">
+			<h3><strong> All Books </strong></h3>
+		</div>
 		<div class="image_homepage">
-		<table class="table">
-			<thead>
-				<tr style="background-color: #A4A4A4;">
-					<td><input type="checkbox" id="checkAll"></td>
-					<td style="width: 15%;"><strong><i>Number</i></strong></td>
-					<td style="width: 15%;"><strong><i>Title</i></strong></td>
-					<td style="width: 15%;"><strong><i>Author</i></strong></td>
-					<td style="width: 15%;"><strong><i>Published Date</i></strong></td>
-					<td style="width: 15%;"><strong><i>Sasia</i></strong></td>
-					<td style="width: 15%;"><strong><i>Cmimi / Leke </i></strong></td>
-					<td style="width: 15%;"><strong><i>Image</i></strong></td>
-					<td></td>
-					<td><input type="submit" name="submit" value="Delete All" onclick="return confirm('Are you sure to want to delete!')" class="btn btn-danger"></td>
- 				</tr>
-			</thead>
-			<tbody>
-				<?php
-					while ($row=mysqli_fetch_array($result)){
-				?>
-
-				<tr class="listview">
-					<td><input type="checkbox" class=checkItem value="<?php echo $rows['id']; ?>" name="check[]"></td>
-					<td><strong><?php echo $row['id']; ?></strong> </td>
-					<td><strong><?php echo $row['title']; ?></strong></td>
-					<td><strong><?php echo $row['author']; ?></strong></td>
-					<td><strong><?php echo $row['published_date']; ?></strong></td>
-					<td><strong><?php echo $row['sasia']; ?></strong></td>
-					<td><strong><?php echo $row['cmimi']; ?></strong></td>
-					<td><?php echo $row['upload_img']; ?></td>
-
-					<td><strong><a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-success"> Edit</a></strong></td>
-					<td><strong><a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure to want to delete!')"> Delete</a></strong></td> 
+			<table class="table">
+				<thead>
+					<tr style="background-color: #A4A4A4;">
+						<td><input type="checkbox" id="checkAll"></td>
+						<td><strong><i>ID</i></strong></td>
+						<td style="width: 15%;"><strong><i>Title</i></strong></td>
+						<td style="width: 15%;"><strong><i>Author</i></strong></td>
+						<td style="width: 15%;"><strong><i>Published Date</i></strong></td>
+						<td style="width: 15%;"><strong><i>Quantity</i></strong></td>
+						<td style="width: 15%;"><strong><i>Price / Leke </i></strong></td>
+						<td style="width: 15%;"><strong><i>Description</i></strong></td>
+						<td style="width: 15%;"><strong><i>Image</i></strong></td>
+						<td style="width: 15%;"><strong>User Name</strong></td>
+						<td></td>
+						<!-- TODO -->
+						<td><input type="submit" name="submit" value="Delete All" id="deleteAcc" onclick="return confirm('Are you sure to want to delete!')" class="btn btn-danger">
+						</td>
+	 				</tr>
+				</thead>
+				<tbody>
 					
-				</tr>
-				<?php
-				}
-				?>		
+					<?php
+						while ($row=mysqli_fetch_array($result)){
+					?>
 
-			</tbody>
-		</table>
+					<tr class="listview">
+						<td class=""><input type="checkbox" class=checkbox value="<?php echo $rows['id']; ?>" name="check[]"></td>
+						<td class=""><?php echo $row['id']; ?> </td>
+						<td class=""><?php echo $row['title']; ?></td>
+						<td class=""><?php echo $row['author']; ?></td>
+						<td class=""><?php echo $row['published_date']; ?></td>
+						<td class=""><?php echo $row['quantity']; ?></td>
+						<td class=""><?php discountPrice($row['price'], $row['discount'])?></td>
+						<td class=""><?php trimContent($row['description'],50)?></td>
+						<td class=""><img src="<?php echo $row['upload_img']; ?>" width=70px height=70px></td>
+						<td class=""><?php echo $row['firstname']; ?></td>
+						<td class=""><a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-success"> Edit</a></td>
+						<td class=""><a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure to want to delete!')"> Delete</a></td> 
+					</tr>
+
+					<?php
+						}
+					?>		
+
+				</tbody>
+			</table>
 		</div>
 	</div>
+</div>
+
+
+
+<nav aria-label="Page navigation example">
+	<ul class="pagination pagination-sm">
+
+		<?php
+			if($page_no == 1){ ?>
+
+				<li class="page-item disabled">
+		<?php 
+
+			}else{
+		?>
+			<li class="page-item">
+  		<?php } ?>
+
+
+		<a class="page-link" href="?page_no=<?php echo $previous_page ;?>"><span aria-hidden="true">&laquo;</span>
+		<span class="sr-only">Previous</span></a></li>
+
+		<?php
+
+		if ($total_no_of_pages <= 4){   
+ 		
+ 			for ($counter = 1; $counter <= $total_no_of_pages; $counter++){
+
+ 				if ($counter == $page_no) {
+
+ 					echo "<li class='page-item active'><a class='page-link'>$counter</a></li>";
+
+         		}else{
+
+        			echo "<li class='page-item'><a class='page-link' href='?page_no=$counter'>$counter</a></li>";
+
+				 }
+       		}
+
+		}elseif ($total_no_of_pages > 4 ){
+
+			if($page_no <= 3 ) { 
+			 		
+				for ($counter = 1; $counter < 4; $counter++){
+
+			 			if ($counter == $page_no) {
+
+			    			echo "<li class='page-item active'><a class='page-link'>$counter</a></li>"; 
+
+			 			}else{
+
+			           		echo "<li class='page-item'><a class='page-link' href='?page_no=$counter'>$counter</a></li>";
+						}
+				}
+
+				echo "<li class='page-item'><a class='page-link'>...</a></li>";
+				echo "<li class='page-item'><a class='page-link' href='?page_no=$second_last'>$second_last</a></li>";	
+				echo "<li class='page-item'><a class='page-link' href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";
+				
+			}elseif($page_no > 3 && $page_no < $total_no_of_pages - 3) { 
+
+				echo "<li class='page-item'><a class='page-link' href='?page_no=1'>1</a></li>";
+				echo "<li class='page-item'><a class='page-link' href='?page_no=2'>2</a></li>";
+				echo "<li class='page-item'><a class='page-link'>...</a></li>";
+
+				for ($counter = $page_no - $adjacents; $counter <= $page_no + $adjacents; $counter++){ 
+
+					if ($counter == $page_no) {
+			 			echo "<li class='page-item active'><a class='page-link'>$counter</a></li>"; 
+			 		}else{
+			       		echo "<li class='page-item'><a class='page-link' href='?page_no=$counter'>$counter</a></li>";
+					}                  
+			       
+				}
+					echo "<li class='page-item'><a class='page-link'>...</a></li>";
+					echo "<li class='page-item'><a class='page-link' href='?page_no=$second_last'>$second_last</a></li>";
+					echo "<li class='page-item'><a class='page-link' href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";
+			}
+
+			else{
+				echo "<li class='page-item'><a class='page-link' href='?page_no=1'>1</a></li>";
+				echo "<li class='page-item'><a class='page-link' href='?page_no=2'>2</a></li>";
+				echo "<li class='page-item'><a class='page-link'>...</a></li>";
+
+				for ($counter = $total_no_of_pages - 6; $counter <= $total_no_of_pages; $counter++){
+					if ($counter == $page_no) {
+						echo "<li class=' page-item active'><a class='page-link'>$counter</a></li>"; 
+					}else{
+						echo "<li class='page-item'><a class='page-link' href='?page_no=$counter'>$counter</a></li>";
+					}                   
+				}
+			}
+		}
+		?>
+
+	<?php
+
+	if((int)$page_no == (int)$total_no_of_pages){ ?>
+
+		<li class="page-item disabled">
+		<?php
+	}else{ ?>
+		
+		<li class="page-item">
+
+	<?php } ?> 
+
+	<a class="page-link" href="<?php echo "?page_no=".$next_page ;?>"><span aria-hidden="true">&raquo;</span>
+		<span class="sr-only">Next</span></a></li>
+
+	</ul>
+</nav>
+
+
 
 <?php
 include('../footer.php');
